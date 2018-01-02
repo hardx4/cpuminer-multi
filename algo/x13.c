@@ -11,7 +11,7 @@
 #include "sha3/sph_jh.h"
 #include "sha3/sph_keccak.h"
 #include "sha3/sph_skein.h"
-#include "sha3/sph_luffa.h"
+#include "sha3/sph_sm3.h"
 #include "sha3/sph_cubehash.h"
 #include "sha3/sph_shavite.h"
 #include "sha3/sph_simd.h"
@@ -30,7 +30,7 @@ void x13hash(void *output, const void *input)
 	sph_jh512_context        ctx_jh;
 	sph_keccak512_context    ctx_keccak;
 	sph_skein512_context     ctx_skein;
-	sph_luffa512_context     ctx_luffa;
+	sm3_ctx_t	             ctx_sm3;
 	sph_cubehash512_context  ctx_cubehash;
 	sph_shavite512_context   ctx_shavite;
 	sph_simd512_context      ctx_simd;
@@ -62,9 +62,9 @@ void x13hash(void *output, const void *input)
 	sph_keccak512(&ctx_keccak, hash, 64);
 	sph_keccak512_close(&ctx_keccak, hashB);
 
-	sph_luffa512_init(&ctx_luffa);
-	sph_luffa512(&ctx_luffa, hashB, 64);
-	sph_luffa512_close(&ctx_luffa, hash);
+	sm3_init(&ctx_sm3);
+	sph_sm3(&ctx_sm3, hashB, 64);
+	sph_sm3_close(&ctx_sm3, hash);
 
 	sph_cubehash512_init(&ctx_cubehash);
 	sph_cubehash512(&ctx_cubehash, hash, 64);
