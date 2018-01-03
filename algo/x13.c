@@ -21,8 +21,9 @@
 
 void x13hash(void *output, const void *input)
 {
-	unsigned char hash[128]; // uint32_t hashA[16], hashB[16];
-	#define hashB hash+64
+	unsigned char hash[128];
+
+	memset(hash, 0, 128);
 
 	sph_blake512_context     ctx_blake;
 	sph_bmw512_context       ctx_bmw;
@@ -30,7 +31,7 @@ void x13hash(void *output, const void *input)
 	sph_jh512_context        ctx_jh;
 	sph_keccak512_context    ctx_keccak;
 	sph_skein512_context     ctx_skein;
-	sm3_ctx_t	             ctx_sm3;
+	sm3_ctx_t				ctx_sm3;
 	sph_cubehash512_context  ctx_cubehash;
 	sph_shavite512_context   ctx_shavite;
 	sph_simd512_context      ctx_simd;
@@ -44,50 +45,51 @@ void x13hash(void *output, const void *input)
 
 	sph_bmw512_init(&ctx_bmw);
 	sph_bmw512(&ctx_bmw, hash, 64);
-	sph_bmw512_close(&ctx_bmw, hashB);
+	sph_bmw512_close(&ctx_bmw, hash + 64);
 
 	sph_groestl512_init(&ctx_groestl);
-	sph_groestl512(&ctx_groestl, hashB, 64);
+	sph_groestl512(&ctx_groestl, hash + 64, 64);
 	sph_groestl512_close(&ctx_groestl, hash);
 
 	sph_skein512_init(&ctx_skein);
 	sph_skein512(&ctx_skein, hash, 64);
-	sph_skein512_close(&ctx_skein, hashB);
+	sph_skein512_close(&ctx_skein, hash + 64);
 
 	sph_jh512_init(&ctx_jh);
-	sph_jh512(&ctx_jh, hashB, 64);
+	sph_jh512(&ctx_jh, hash + 64, 64);
 	sph_jh512_close(&ctx_jh, hash);
 
 	sph_keccak512_init(&ctx_keccak);
 	sph_keccak512(&ctx_keccak, hash, 64);
-	sph_keccak512_close(&ctx_keccak, hashB);
+	sph_keccak512_close(&ctx_keccak, hash + 64);
 
+	memset(hash, 0, 64);	//sm3 is 256bit hash
 	sm3_init(&ctx_sm3);
-	sph_sm3(&ctx_sm3, hashB, 64);
+	sph_sm3(&ctx_sm3, hash + 64, 64);
 	sph_sm3_close(&ctx_sm3, hash);
 
 	sph_cubehash512_init(&ctx_cubehash);
 	sph_cubehash512(&ctx_cubehash, hash, 64);
-	sph_cubehash512_close(&ctx_cubehash, hashB);
+	sph_cubehash512_close(&ctx_cubehash, hash + 64);
 
 	sph_shavite512_init(&ctx_shavite);
-	sph_shavite512(&ctx_shavite, hashB, 64);
+	sph_shavite512(&ctx_shavite, hash + 64, 64);
 	sph_shavite512_close(&ctx_shavite, hash);
 
 	sph_simd512_init(&ctx_simd);
 	sph_simd512(&ctx_simd, hash, 64);
-	sph_simd512_close(&ctx_simd, hashB);
+	sph_simd512_close(&ctx_simd, hash + 64);
 
 	sph_echo512_init(&ctx_echo);
-	sph_echo512(&ctx_echo, hashB, 64);
+	sph_echo512(&ctx_echo, hash + 64, 64);
 	sph_echo512_close(&ctx_echo, hash);
 
 	sph_hamsi512_init(&ctx_hamsi);
 	sph_hamsi512(&ctx_hamsi, hash, 64);
-	sph_hamsi512_close(&ctx_hamsi, hashB);
+	sph_hamsi512_close(&ctx_hamsi, hash + 64);
 
 	sph_fugue512_init(&ctx_fugue);
-	sph_fugue512(&ctx_fugue, hashB, 64);
+	sph_fugue512(&ctx_fugue, hash + 64, 64);
 	sph_fugue512_close(&ctx_fugue, hash);
 
 	memcpy(output, hash, 32);
@@ -95,8 +97,8 @@ void x13hash(void *output, const void *input)
 
 int scanhash_x13(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *hashes_done)
 {
-	uint32_t _ALIGN(128) hash32[8];
-	uint32_t _ALIGN(128) endiandata[20];
+	uint32_t _ALIGN(32) hash64[8];
+	uint32_t endiandata[32];
 	uint32_t *pdata = work->data;
 	uint32_t *ptarget = work->target;
 
@@ -123,41 +125,22 @@ int scanhash_x13(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *ha
 	};
 
 	// we need bigendian data...
-	for (int k=0; k < 19; k++)
-		be32enc(&endiandata[k], pdata[k]);
+	int kk = 0;
+	for (; kk < 32; kk++)
+	{
+		be32enc(&endiandata[kk], ((uint32_t*)pdata)[kk]);
+	};
 
-#ifdef DEBUG_ALGO
-	printf("[%d] Htarg=%X\n", thr_id, Htarg);
-#endif
-	for (int m=0; m < 6; m++) {
-		if (Htarg <= htmax[m]) {
-			uint32_t mask = masks[m];
-			do {
-				pdata[19] = ++n;
-				be32enc(&endiandata[19], n);
-				x13hash(hash32, endiandata);
-#ifndef DEBUG_ALGO
-				if ((!(hash32[7] & mask)) && fulltest(hash32, ptarget)) {
-					work_set_target_ratio(work, hash32);
-					*hashes_done = n - first_nonce + 1;
-					return true;
-				}
-#else
-				if (!(n % 0x1000) && !thr_id) printf(".");
-				if (!(hash32[7] & mask)) {
-					printf("[%d]",thr_id);
-					if (fulltest(hash32, ptarget)) {
-						work_set_target_ratio(work, hash32);
-						*hashes_done = n - first_nonce + 1;
-						return true;
-					}
-				}
-#endif
-			} while (n < max_nonce && !work_restart[thr_id].restart);
-			// see blake.c if else to understand the loop on htmax => mask
-			break;
+	do {
+		pdata[19] = ++n;
+		be32enc(&endiandata[19], n);
+		x13hash(hash64, &endiandata);
+		if (((hash64[7] & 0xFFFFFF00) == 0) &&
+			fulltest(hash64, ptarget)) {
+			*hashes_done = n - first_nonce + 1;
+			return true;
 		}
-	}
+	} while (n < max_nonce && !work_restart[thr_id].restart);
 
 	*hashes_done = n - first_nonce + 1;
 	pdata[19] = n;

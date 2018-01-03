@@ -557,9 +557,9 @@ static void calc_network_diff(struct work *work)
 	// sample for diff 43.281 : 1c05ea29
 	// todo: endian reversed on longpoll could be zr5 specific...
 	uint32_t nbits = have_longpoll ? work->data[18] : swab32(work->data[18]);
-	if (opt_algo == ALGO_LBRY) nbits = swab32(work->data[26]);
-	if (opt_algo == ALGO_DECRED) nbits = work->data[29];
-	if (opt_algo == ALGO_SIA) nbits = work->data[11]; // unsure if correct
+	if (opt_algo == ALGO_LBRY){ nbits = swab32(work->data[26]); }
+	if (opt_algo == ALGO_DECRED){ nbits = work->data[29]; }
+	if (opt_algo == ALGO_SIA){ nbits = work->data[11]; } // unsure if correct
 	uint32_t bits = (nbits & 0xffffff);
 	int16_t shift = (swab32(nbits) & 0xff); // 0x1c = 28
 
@@ -1487,8 +1487,9 @@ bool rpc2_login(CURL *curl)
 
 	json_t *result = json_object_get(val, "result");
 
-	if (!result)
+	if (!result){
 		goto end;
+	}
 
 	json_t *job = json_object_get(result, "job");
 	if (!rpc2_job_decode(job, &g_work)) {
@@ -2577,8 +2578,9 @@ static bool stratum_handle_response(char *buf)
 
 	if (jsonrpc_2)
 	{
-		if (!res_val && !err_val)
+		if (!res_val && !err_val){
 			goto out;
+		}
 
 		json_t *status = json_object_get(res_val, "status");
 		if(status) {
