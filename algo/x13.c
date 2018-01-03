@@ -31,7 +31,7 @@ void x13hash(void *output, const void *input)
 	sph_jh512_context        ctx_jh;
 	sph_keccak512_context    ctx_keccak;
 	sph_skein512_context     ctx_skein;
-	sm3_ctx_t				ctx_sm3;
+	sm3_ctx_t                ctx_sm3;
 	sph_cubehash512_context  ctx_cubehash;
 	sph_shavite512_context   ctx_shavite;
 	sph_simd512_context      ctx_simd;
