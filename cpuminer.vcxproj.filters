@@ -333,9 +333,6 @@
     <ClCompile Include="yescrypt\sha256_Y.c">
       <Filter>yescrypt</Filter>
     </ClCompile>
-    <ClCompile Include="sha3\sm3.c">
-      <Filter>sph</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sha3\sph_blake.h">
@@ -541,9 +538,6 @@
     </ClInclude>
     <ClInclude Include="yescrypt\yescrypt-platform.h">
       <Filter>yescrypt</Filter>
-    </ClInclude>
-    <ClInclude Include="sha3\sph_sm3.h">
-      <Filter>sph</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

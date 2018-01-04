@@ -183,9 +183,8 @@ int scanhash_drop(int thr_id, struct work *work, uint32_t max_nonce, uint64_t *h
 	uint32_t nonce = first_nonce;
 	#define tmpdata pdata
 
-	if (opt_benchmark){
+	if (opt_benchmark)
 		ptarget[7] = 0x07ff;
-	}
 
 	const uint32_t htarg = ptarget[7];
 

@@ -1529,15 +1529,15 @@ json_t* json_rpc2_call_recur(CURL *curl, const char *url, const char *userpass,
 	}
 	json_t *res = json_rpc_call(curl, url, userpass, json_dumps(rpc_req, 0),
 			curl_err, flags | JSON_RPC_IGNOREERR);
-	if (!res){ goto end; }
+	if(!res) goto end;
 	json_t *error = json_object_get(res, "error");
-	if (!error){ goto end; }
+	if(!error) goto end;
 	json_t *message;
 	if(json_is_string(error))
 		message = error;
 	else
 		message = json_object_get(error, "message");
-	if (!message || !json_is_string(message)){ goto end; }
+	if(!message || !json_is_string(message)) goto end;
 	const char *mes = json_string_value(message);
 	if(!strcmp(mes, "Unauthenticated")) {
 		pthread_mutex_lock(&rpc2_login_lock);

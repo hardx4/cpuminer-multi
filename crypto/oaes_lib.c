@@ -339,9 +339,8 @@ static OAES_RET oaes_word_rot_left( uint8_t word[OAES_COL_LEN] )
 
 static OAES_RET oaes_shift_rows( uint8_t block[OAES_BLOCK_SIZE] )
 {
-	if (unlikely(NULL == block)){
+	if( unlikely(NULL == block) )
 		return OAES_RET_ARG1;
-	}
 
 	uint8_t _temp[] = { block[0x03], block[0x02], block[0x01], block[0x06], block[0x0b] };
 

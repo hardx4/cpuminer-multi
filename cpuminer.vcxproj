@@ -184,7 +184,6 @@
       <Optimization Condition="'$(Configuration)'=='Release'">Full</Optimization>
     </ClCompile>
     <ClCompile Include="api.c" />
-    <ClCompile Include="sha3\sm3.c" />
     <ClCompile Include="sysinfos.c" />
     <ClCompile Include="crypto\aesb.c" />
     <ClCompile Include="crypto\c_blake256.c" />
@@ -312,7 +311,6 @@
     <ClInclude Include="lyra2\Lyra2.h" />
     <ClInclude Include="lyra2\Sponge.h" />
     <ClInclude Include="miner.h" />
-    <ClInclude Include="sha3\sph_sm3.h" />
     <ClInclude Include="uint256.h" />
     <ClInclude Include="res\resource.h" />
     <ClInclude Include="scryptjane\scrypt-jane-chacha.h" />
